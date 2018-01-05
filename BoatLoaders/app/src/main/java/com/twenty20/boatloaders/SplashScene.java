@@ -8,12 +8,17 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 
+/**
+ * This class is the scene that displays when the game is loading.
+ * After finished, user tap sets scene to Main Menu.
+ * **/
+
 public class SplashScene implements Scene{
+
+    private SceneManager manager;
 
     private final Bitmap splashScreen;
     private final Rect splashScreenRect;
-
-    private SceneManager manager;
 
     SplashScene(SceneManager manager){
         this.manager = manager;
@@ -40,13 +45,13 @@ public class SplashScene implements Scene{
 
     @Override
     public void terminate() {
-        manager.setScene(0);
+        manager.setScene(SceneEnum.MAINMENU);
     }
 
     @Override
     public void receiveTouch(MotionEvent event) {
         //On any event? tap screen...
 
-        if(event.getAction() == MotionEvent.ACTION_UP) manager.setScene(1);
+        if(event.getAction() == MotionEvent.ACTION_UP) terminate();
     }
 }

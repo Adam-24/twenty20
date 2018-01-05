@@ -3,6 +3,10 @@ package com.twenty20.boatloaders;
 import android.graphics.Canvas;
 import android.view.SurfaceHolder;
 
+/**
+ * This class control the FPS, and threads.
+ * **/
+
 public class MainThread extends Thread{
     public static final int MAX_FPS = 30;
     private double averageFPS;

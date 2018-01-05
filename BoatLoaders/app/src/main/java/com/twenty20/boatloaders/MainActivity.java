@@ -6,6 +6,10 @@ import android.util.DisplayMetrics;
 import android.view.Window;
 import android.view.WindowManager;
 
+/**
+ * This class is the heart of the application. (probably should just leave it alone)
+ * **/
+
 public class MainActivity extends Activity {
 
     @Override

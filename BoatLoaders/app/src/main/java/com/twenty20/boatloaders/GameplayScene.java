@@ -3,6 +3,11 @@ package com.twenty20.boatloaders;
 import android.graphics.Canvas;
 import android.view.MotionEvent;
 
+/**
+ * This class is where the game is actually played.
+ * On win/loss/quit "GameOver" is used. (not sure how yet...)
+ * **/
+
 public class GameplayScene implements Scene {
 
     private SceneManager manager;
@@ -13,7 +18,7 @@ public class GameplayScene implements Scene {
 
     @Override
     public void terminate() {
-        manager.setScene(2);
+        manager.setScene(SceneEnum.MAINMENU);
     }
 
     @Override

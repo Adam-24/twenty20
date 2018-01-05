@@ -5,39 +5,42 @@ import android.view.MotionEvent;
 
 import java.util.ArrayList;
 
+/**
+ * This class directs control to the scenes in the arrayList.
+ * **/
+
 public class SceneManager {
     private ArrayList<Scene> scenes = new ArrayList<>();
-    private int levelSelected = 0;
-    public int activeScene, previousScene = 0;
+    public SceneEnum activeScene, previousScene = SceneEnum.SPLASHSCREEN;
 
     public SceneManager(){
         scenes.add(new SplashScene(this));
         scenes.add(new MainMenuScene(this));
         scenes.add(new GameplayScene(this));
-        scenes.add(new OptionsScene(this));
         //scenes.add(new StoreScene(this));  //TODO: Add store scene.
 
-        //TODO: Use enum class for arrayList positions, instead of numbers.
-        activeScene = 0;
+        activeScene = SceneEnum.SPLASHSCREEN;
     }
 
-    public void setScene(int activeScene){
+    public void setScene(SceneEnum activeScene){
         //Transition to scene (parameter's value).
         previousScene = this.activeScene;
+
+        //TODO: Can this method "swallow" left over MotionEvents from the previous scene?
 
         this.activeScene = activeScene;
     }
 
     public void receiveTouch(MotionEvent event){
-        scenes.get(activeScene).receiveTouch(event);
+        scenes.get(activeScene.getValue()).receiveTouch(event);
     }
 
     public void update(){
-        scenes.get(activeScene).update();
+        scenes.get(activeScene.getValue()).update();
     }
 
     public void draw(Canvas canvas){
-        scenes.get(activeScene).draw(canvas);
+        scenes.get(activeScene.getValue()).draw(canvas);
     }
 
 }
