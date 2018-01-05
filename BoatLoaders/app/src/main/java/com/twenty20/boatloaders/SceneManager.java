@@ -2,6 +2,7 @@ package com.twenty20.boatloaders;
 
 import android.graphics.Canvas;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -27,6 +28,8 @@ public class SceneManager {
         previousScene = this.activeScene;
 
         //TODO: Can this method "swallow" left over MotionEvents from the previous scene?
+
+        Toast.makeText(Constants.CURRENT_CONTEXT, activeScene.toString(), Toast.LENGTH_SHORT).show(); //To show where user is, DEBUG.
 
         this.activeScene = activeScene;
     }

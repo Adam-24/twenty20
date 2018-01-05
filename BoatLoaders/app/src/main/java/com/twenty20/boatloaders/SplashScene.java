@@ -40,7 +40,25 @@ public class SplashScene implements Scene{
 
         paint.setColor(Color.BLACK);
         paint.setTextSize(50);
-        canvas.drawText("Tap to Start", (float) (Constants.SCREEN_WIDTH*.60), (float) (Constants.SCREEN_HEIGHT*.75), paint);
+
+        drawCentered("Tap to Start", new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), canvas, paint);
+    }
+
+    private void drawCentered(String text, Rect bounds, Canvas canvas, Paint paint) {
+        int mTextWidth, mTextHeight; // Our calculated text bounds
+
+        // Now lets calculate the size of the text
+        Rect textBounds = new Rect();
+        paint.getTextBounds(text, 0, text.length(), textBounds);
+        mTextWidth = (int) paint.measureText(text); // Use measureText to calculate width
+        mTextHeight = textBounds.height(); // Use height from getTextBounds()
+
+        // Later when you draw...
+        canvas.drawText(text, // Text to display
+            (Constants.SCREEN_WIDTH/2) - (mTextWidth / 2f),
+            (float) (Constants.SCREEN_HEIGHT*.75) + (mTextHeight / 2f),
+            paint
+        );
     }
 
     @Override
