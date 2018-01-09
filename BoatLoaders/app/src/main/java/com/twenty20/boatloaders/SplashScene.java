@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 
 /**
  * This class is the scene that displays when the game is loading.
+ * TODO: put loading here...
  * After finished, user tap sets scene to Main Menu.
  * **/
 
@@ -45,31 +46,30 @@ public class SplashScene implements Scene{
     }
 
     private void drawCentered(String text, Rect bounds, Canvas canvas, Paint paint) {
-        int mTextWidth, mTextHeight; // Our calculated text bounds
+        int mTextWidth, mTextHeight;
 
-        // Now lets calculate the size of the text
+        //Calculate the size of the text
         Rect textBounds = new Rect();
         paint.getTextBounds(text, 0, text.length(), textBounds);
-        mTextWidth = (int) paint.measureText(text); // Use measureText to calculate width
-        mTextHeight = textBounds.height(); // Use height from getTextBounds()
+        mTextWidth = (int) paint.measureText(text);
+        mTextHeight = textBounds.height();
 
-        // Later when you draw...
-        canvas.drawText(text, // Text to display
-            (Constants.SCREEN_WIDTH/2) - (mTextWidth / 2f),
-            (float) (Constants.SCREEN_HEIGHT*.75) + (mTextHeight / 2f),
+        canvas.drawText(text,
+            (bounds.centerX()) - (mTextWidth / 2f),
+            (float) (bounds.height()*.75) + (mTextHeight / 2f),
             paint
         );
     }
 
     @Override
-    public void terminate() {
-        manager.setScene(SceneEnum.MAINMENU);
+    public void terminateTo(SceneEnum nextScene) {
+        manager.setScene(nextScene);
     }
 
     @Override
     public void receiveTouch(MotionEvent event) {
         //On any event? tap screen...
 
-        if(event.getAction() == MotionEvent.ACTION_UP) terminate();
+        if(event.getAction() == MotionEvent.ACTION_UP) terminateTo(SceneEnum.MAINMENU);
     }
 }

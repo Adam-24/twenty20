@@ -20,7 +20,7 @@ public class SceneManager {
         scenes.add(new GameplayScene(this));
         //scenes.add(new StoreScene(this));  //TODO: Add store scene.
 
-        activeScene = SceneEnum.SPLASHSCREEN;
+        activeScene = SceneEnum.GAME;
     }
 
     public void setScene(SceneEnum activeScene){
