@@ -8,4 +8,5 @@ public interface Scene {
     public void draw(Canvas canvas);
     public void terminateTo(SceneEnum nextScene);
     public void receiveTouch(MotionEvent event);
+    public void reset();
 }

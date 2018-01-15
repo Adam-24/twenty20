@@ -5,7 +5,8 @@ import android.view.MotionEvent;
 
 public interface Popup {
     public void update();
-    public void receiveTouch(MotionEvent event);
+    public SceneEnum receiveTouch(MotionEvent event);
     public void draw(Canvas canvas);
     public void close();
+    public void turnOn();
 }

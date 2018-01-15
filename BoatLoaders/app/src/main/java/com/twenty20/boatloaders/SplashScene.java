@@ -72,4 +72,11 @@ public class SplashScene implements Scene{
 
         if(event.getAction() == MotionEvent.ACTION_UP) terminateTo(SceneEnum.MAINMENU);
     }
+
+    @Override
+    public void reset() {
+
+    }
+
+
 }

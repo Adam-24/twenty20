@@ -1,13 +1,12 @@
 package com.twenty20.boatloaders;
 
-
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 
 /**
  * Created by Admin on 1/8/2018.
@@ -34,7 +33,7 @@ public class Button {
         hasOverlay = false;
     }
 
-    public Button(Rect bounds, Resources res, int backgroundID, int overlayID){
+    /*public Button(Rect bounds, Resources res, int backgroundID, int overlayID){
 
         this.rect = new Rect(bounds);
         this.background = BitmapFactory.decodeResource(res, backgroundID);
@@ -57,7 +56,7 @@ public class Button {
         this.background = BitmapFactory.decodeResource(res, backgroundID);
 
         hasOverlay = false;
-    }
+    }*/
 
     public Button(String text, int textColor, int textSize, Rect bounds, Resources res, int backgroundID, int overlayID){
 
@@ -67,6 +66,8 @@ public class Button {
         this.paint = new Paint();
         this.paint.setColor(textColor);
         this.paint.setTextSize(textSize);
+        this.paint.setTypeface(Typeface.DEFAULT_BOLD);
+        this.paint.setAntiAlias(true);
 
         this.rect = new Rect(bounds);
         this.background = BitmapFactory.decodeResource(res, backgroundID);

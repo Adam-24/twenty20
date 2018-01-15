@@ -3,11 +3,9 @@ package com.twenty20.boatloaders;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 /**
  * This class is where the game is actually played.
@@ -21,26 +19,32 @@ public class GameplayScene implements Scene {
     private Bitmap background_image;
     private Rect background;
 
-    private Crate crate;
+    //TODO: Create Sprite Class [Object]
+    private Bitmap water;
+    private Rect waterRect;
+    private Rect waterCrop;
 
     private Column[] columns;
+    private Crate crate;
+
+    private Popup endOfGame;
+    private Popup pause;
 
     private Button pauseButton;
 
+    private boolean hasWon;
+    private boolean isPaused;
+
     public GameplayScene(SceneManager manager){
         this.manager = manager;
-
-        initCrates();
-        initButtons();
-        initImgs();
     }
 
     private void initButtons() {
         pauseButton = new Button( new Rect(
-                Constants.SCREEN_WIDTH-100,
-                0,
-                Constants.SCREEN_WIDTH,
-                100),
+                Constants.SCREEN_WIDTH-125,
+                25,
+                Constants.SCREEN_WIDTH - 25,
+                125),
                 Constants.CURRENT_CONTEXT.getResources(), R.drawable.pause);
     }
 
@@ -76,6 +80,22 @@ public class GameplayScene implements Scene {
     private void initImgs() {
         background_image = BitmapFactory.decodeResource(Constants.CURRENT_CONTEXT.getResources(), R.drawable.gm_background);
         background = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+
+        water = BitmapFactory.decodeResource(Constants.CURRENT_CONTEXT.getResources(), R.drawable.wave_sprite);
+        waterRect = new Rect(Constants.SCREEN_WIDTH/4, (int) (Constants.SCREEN_HEIGHT * .75), Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+
+        waterCrop = new Rect(0, 0, 1920, 1000/3); // No idea, check how its supposed to work...
+    }
+
+    @Override
+    public void reset() {
+        endOfGame = new GameOver();
+        pause = new Pause();
+        isPaused = false;
+        hasWon = false;
+        initCrates();
+        initButtons();
+        initImgs();
     }
 
     @Override
@@ -83,54 +103,75 @@ public class GameplayScene implements Scene {
         manager.setScene(nextScene);
     }
 
-    private void reset() {
-        initCrates();
-        initButtons();
-        initImgs();
-    }
-
     @Override
     public void receiveTouch(MotionEvent event) {
+        if(isPaused){
 
-        if(event.getAction() == MotionEvent.ACTION_DOWN) {
-            for (Column column : columns) {
-                if (column.contains((int) event.getX(), (int) event.getY())){
-                    crate = column.pickUp();
-                    if(crate != null) crate.pickedUp(column);
+            SceneEnum sceneEnum = pause.receiveTouch(event);
+
+            if (sceneEnum != null) {
+                //TODO: HACK, fix it.
+                if(sceneEnum == SceneEnum.SPLASHSCREEN) {
+                    isPaused = false;
+                    pause.close();
+                } else {
+                    terminateTo(sceneEnum);
+                    reset();
                 }
             }
-        }
 
-        if(event.getAction() == MotionEvent.ACTION_MOVE){
-            if ((crate != null) && crate.isMoving()){
-                crate.reposition((int) event.getX(), (int) event.getY());
-            }
-        }
+        } else {
 
-        if(event.getAction() == MotionEvent.ACTION_UP){
-            for (Column column : columns) {
-                if ((crate != null) && column.contains((int) event.getX(), (int) event.getY())){
-                    if(! column.placeCrate(crate)){
-                        //put back.
-                        System.out.println("Did not work, putting back.");
-                        crate.pickedUpFrom().placeCrate(crate);
+            if (!hasWon) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    for (Column column : columns) {
+                        if (column.contains((int) event.getX(), (int) event.getY())) {
+                            crate = column.pickUp();
+                            if (crate != null) crate.pickedUp(column);
+                        }
                     }
-                    crate = null;
+                }
+
+                if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    if ((crate != null) && crate.isMoving()) {
+                        crate.reposition((int) event.getX(), (int) event.getY());
+                    }
                 }
             }
 
-            if(hasWon()){
-                //TODO: Win object == visible
-                Toast.makeText(Constants.CURRENT_CONTEXT, "Win!", Toast.LENGTH_LONG).show();
-                terminateTo(SceneEnum.MAINMENU);
-            }
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (!hasWon) {
+                    for (Column column : columns) {
+                        if ((crate != null) && column.contains((int) event.getX(), (int) event.getY())) {
+                            if (!column.placeCrate(crate)) {
+                                //put back.
+                                System.out.println("Did not work, putting back.");
+                                crate.pickedUpFrom().placeCrate(crate);
+                            }
+                            crate = null;
+                        }
+                    }
 
-            if(pauseButton.contains((int) event.getX(), (int) event.getY())) {
-                terminateTo(SceneEnum.MAINMENU); // TODO: for now to Main menu, later, view "pause" object.
-                reset(); // on leaving game screen (not saving games yet...)
-            }
 
-            outputInfo(event);
+                    if (pauseButton.contains((int) event.getX(), (int) event.getY())) {
+
+                        isPaused = true;
+                        pause.turnOn();
+                    }
+                }
+
+                if (hasWon = hasWon()) {
+                    //TODO: Win object == visible
+                    SceneEnum sceneEnum = endOfGame.receiveTouch(event);
+
+                    if (sceneEnum != null) {
+                        terminateTo(sceneEnum);
+                        reset();
+                    }
+                }
+
+                outputInfo(event);
+            }
         }
     }
 
@@ -152,11 +193,9 @@ public class GameplayScene implements Scene {
 
     @Override
     public void draw(Canvas canvas) {
-        Paint paint = new Paint();
-        paint.setColor(Color.BLUE);
 
-        canvas.drawRect(Constants.SCREEN, paint);
         canvas.drawBitmap(background_image, null, background, new Paint());
+        canvas.drawBitmap(water, waterCrop, waterRect, new Paint());
 
         pauseButton.draw(canvas);
 
@@ -165,6 +204,8 @@ public class GameplayScene implements Scene {
         }
 
         if (crate != null) crate.draw(canvas);
+        pause.draw(canvas);
+        if(hasWon) endOfGame.draw(canvas);
     }
 
     @Override

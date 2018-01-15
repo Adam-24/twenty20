@@ -24,6 +24,9 @@ public class MainMenuScene implements Scene {
     private Rect background;
     private Bitmap background_image;
 
+    private Rect title;
+    private Bitmap title_image;
+
     MainMenuScene(SceneManager manager){
         this.manager = manager;
 
@@ -33,8 +36,24 @@ public class MainMenuScene implements Scene {
     private void initRects() {
 
         play_3 = new Button(
-                "Play (3 crates)", Color.BLACK, 50,
-                new Rect(Constants.SCREEN_WIDTH-250, Constants.SCREEN_HEIGHT-125, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT),
+                "3 Crates", Color.BLACK, 50, //350 x 150
+                new Rect(Constants.SCREEN.centerX() - 175, Constants.SCREEN.centerY() - 150, Constants.SCREEN.centerX() + 175, Constants.SCREEN.centerY()),
+                Constants.CURRENT_CONTEXT.getResources(),
+                R.drawable.button_back,
+                R.drawable.button_overlay
+        );
+
+        play_5 = new Button(
+                "5 Crates", Color.BLACK, 50,
+                new Rect(Constants.SCREEN.centerX() - 175, Constants.SCREEN.centerY() + 25, Constants.SCREEN.centerX() + 175, Constants.SCREEN.centerY() + 175),
+                Constants.CURRENT_CONTEXT.getResources(),
+                R.drawable.button_back,
+                R.drawable.button_overlay
+        );
+
+        play_8 = new Button(
+                "8 Crates", Color.BLACK, 50,
+                new Rect(Constants.SCREEN.centerX() - 175, Constants.SCREEN.centerY() + 200, Constants.SCREEN.centerX() + 175, Constants.SCREEN.centerY() + 350),
                 Constants.CURRENT_CONTEXT.getResources(),
                 R.drawable.button_back,
                 R.drawable.button_overlay
@@ -42,6 +61,13 @@ public class MainMenuScene implements Scene {
 
         background_image = BitmapFactory.decodeResource(Constants.CURRENT_CONTEXT.getResources(), R.drawable.mm_background);
         background = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+
+        title_image = BitmapFactory.decodeResource(Constants.CURRENT_CONTEXT.getResources(), R.drawable.game_title);
+        //w 400, h 200
+        title = new Rect(Constants.SCREEN.centerX() - 700,
+                Constants.SCREEN.centerY() - 400,
+                Constants.SCREEN.centerX() + 700,
+                Constants.SCREEN.centerY() - 200);
     }
 
     @Override
@@ -52,8 +78,11 @@ public class MainMenuScene implements Scene {
     @Override
     public void draw(Canvas canvas) {
         canvas.drawBitmap(background_image, null, background, new Paint());
+        canvas.drawBitmap(title_image, null, title, new Paint());
 
         play_3.draw(canvas);
+        play_5.draw(canvas);
+        play_8.draw(canvas);
     }
 
     @Override
@@ -63,9 +92,22 @@ public class MainMenuScene implements Scene {
 
     @Override
     public void receiveTouch(MotionEvent event) {
-        if(event.getAction() == MotionEvent.ACTION_UP && play_3.contains((int)event.getX(), (int)event.getY())){
-            Constants.NUMBER_OF_CRATES = 3;
-            terminateTo(SceneEnum.GAME);
+        if(event.getAction() == MotionEvent.ACTION_UP) {
+            if (play_3.contains((int) event.getX(), (int) event.getY())) {
+                Constants.NUMBER_OF_CRATES = 3;
+                terminateTo(SceneEnum.GAME);
+            } else if (play_5.contains((int) event.getX(), (int) event.getY())) {
+                Constants.NUMBER_OF_CRATES = 5;
+                terminateTo(SceneEnum.GAME);
+            } else if (play_8.contains((int) event.getX(), (int) event.getY())) {
+                Constants.NUMBER_OF_CRATES = 8;
+                terminateTo(SceneEnum.GAME);
+            }
         }
+    }
+
+    @Override
+    public void reset() {
+
     }
 }

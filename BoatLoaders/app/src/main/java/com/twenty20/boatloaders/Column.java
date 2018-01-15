@@ -19,15 +19,22 @@ public class Column {
     private List<Crate> crates;
     private Rect bounds;
 
+    private Plaque plaque;
+
     public Column(Rect bounds){
-        crates = new ArrayList<>();
         this.bounds = bounds;
 
-        System.out.println("Bounds W:" + bounds.width());
+        plaque = new Plaque( new Rect(
+                bounds.centerX() - 75,
+                (int) (Constants.SCREEN_HEIGHT * .75),
+                bounds.centerX() + 75,
+                (int) (Constants.SCREEN_HEIGHT * .75) + 75
+        ), Constants.CURRENT_CONTEXT.getResources(), R.drawable.plaque);
+        crates = new ArrayList<>();
     }
 
     public void add(Crate crate){
-        int x = bounds.centerX();// - crate.getRect().width()/2;
+        int x = bounds.centerX();
         int y = (int) ((Constants.SCREEN_HEIGHT * .75) - ((crates.size() + 1) * crate.getRect().height()) + crate.getRect().height()/2);
 
         crate.reposition(x, y);
@@ -64,38 +71,10 @@ public class Column {
         for (Crate crate : crates) {
             crate.draw(canvas);
         }
+        plaque.draw(canvas);
     }
 
     public int numberOfCratesHeld(){
         return crates.size();
     }
-    /*
-    * if(event.getAction() == MotionEvent.ACTION_DOWN) {
-            for (Crate crate : crates) {
-                if (crate.contains((int) event.getX(), (int) event.getY())){
-                    crate.reposition(event);
-                }
-            }
-        }
-
-        if(event.getAction() == MotionEvent.ACTION_MOVE){
-            for (Crate crate : crates) {
-                if (crate.isMoving()){
-                    crate.reposition(event);
-                }
-            }
-        }
-
-        if(event.getAction() == MotionEvent.ACTION_UP){
-            for (Crate crate : crates) {
-                if(crate.isMoving()) {
-                    if(! crate.putDown(event)){
-                        //if let go on boarders; does contains intersect or avoid?
-                    }
-                }
-            }
-        }
-    *
-    * */
-
 }
