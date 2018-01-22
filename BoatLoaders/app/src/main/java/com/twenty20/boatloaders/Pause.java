@@ -3,7 +3,7 @@ package com.twenty20.boatloaders;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
+import android.graphics.Point;
 import android.view.MotionEvent;
 
 /**
@@ -14,61 +14,73 @@ import android.view.MotionEvent;
 public class Pause implements Popup {
 
     private Button restart;
-    //private Button toggleSound;
     private Button mainMenu;
-    private boolean isBeingUsed;
+
+    private SceneEnum closeTo;
+    private boolean isOpen;
 
     public Pause(){
-        restart = new Button("Restart", Color.BLACK, 50,
-                new Rect(Constants.SCREEN.centerX() - 150,100,Constants.SCREEN.centerX() + 150,225),
-                Constants.CURRENT_CONTEXT.getResources(), R.drawable.button_back, R.drawable.button_overlay);
-        //toggleSound = new Button();
-        mainMenu = new Button("Main Menu", Color.BLACK, 50,
-                new Rect(Constants.SCREEN.centerX() - 150,300,Constants.SCREEN.centerX() + 150,425),
-                Constants.CURRENT_CONTEXT.getResources(), R.drawable.button_back, R.drawable.button_overlay);
-        isBeingUsed = false;
+        isOpen = false;
+
+        restart = new Button(Constants.CURRENT_CONTEXT.getResources(),
+                new Point(Constants.SCREEN.centerX(), Constants.SCREEN.centerY() - 100),
+                R.drawable.button_back, R.drawable.button_overlay,
+                new Text.Builder("Restart").setColor(Color.BLACK).setSize(50).build());
+
+        mainMenu = new Button(Constants.CURRENT_CONTEXT.getResources(),
+                new Point(Constants.SCREEN.centerX(), Constants.SCREEN.centerY() + 100),
+                R.drawable.button_back, R.drawable.button_overlay,
+                new Text.Builder("Main Menu").setColor(Color.BLACK).setSize(50).build());
+
+        //TODO: Add sound toggle.
+    }
+
+    @Override
+    public void draw(Canvas canvas) {
+        Paint paint = new Paint();
+        paint.setColor(Color.argb(50, 0,0,0));
+        canvas.drawRect(Constants.SCREEN, paint);
+
+        restart.draw(canvas);
+        mainMenu.draw(canvas);
+    }
+
+    @Override
+    public boolean shouldClose(MotionEvent event) {
+        if(event.getAction() == MotionEvent.ACTION_UP){
+            if(restart.contains((int)event.getX(), (int)event.getY())){
+                closeTo = SceneEnum.GAME;
+                return true;
+            } else if(mainMenu.contains((int)event.getX(), (int)event.getY())){
+                closeTo = SceneEnum.MAINMENU;
+                return true;
+            } else {
+                closeTo = null;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void open() {
+        closeTo = null;
+        isOpen = true;
+    }
+
+    @Override
+    public boolean isOpen() {
+        return isOpen;
+    }
+
+    @Override
+    public SceneEnum close() {
+        isOpen = false;
+        return closeTo;
     }
 
     @Override
     public void update() {
 
-    }
-
-    public void turnOn(){
-        isBeingUsed = true;
-    }
-
-    @Override
-    public SceneEnum receiveTouch(MotionEvent event) {
-        //if(! isBeingUsed) isBeingUsed = true;
-
-        if(event.getAction() == MotionEvent.ACTION_UP){
-            if(restart.contains((int)event.getX(), (int)event.getY())){
-                return SceneEnum.GAME;
-            } else if(mainMenu.contains((int)event.getX(), (int)event.getY())){
-                return SceneEnum.MAINMENU;
-            } else {
-                //This is a hack. Just want it working for now... TODO: FIX.
-                return SceneEnum.SPLASHSCREEN;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void draw(Canvas canvas) {
-        if(isBeingUsed){
-            Paint paint = new Paint();
-            paint.setColor(Color.argb(50, 0,0,0));
-            canvas.drawRect(Constants.SCREEN, paint);
-
-            restart.draw(canvas);
-            mainMenu.draw(canvas);
-        }
-    }
-
-    @Override
-    public void close() {
-        isBeingUsed = false;
     }
 }

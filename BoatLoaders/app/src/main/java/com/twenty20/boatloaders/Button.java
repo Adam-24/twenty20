@@ -5,8 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.Typeface;
 
 /**
  * Created by Admin on 1/8/2018.
@@ -14,94 +14,95 @@ import android.graphics.Typeface;
 
 public class Button {
 
-    private boolean hasText;
-    private Rect rect;
     private Bitmap background;
+    private Bitmap foreground;
     private Bitmap overlay;
-    private String text;
-    private Paint paint;
 
-    private boolean hasOverlay;
+    private Rect rect;
+    private Text text;
 
-    //TODO: Fix so that textSize is automatic (proportional to the given Rect)
-    public Button(Rect bounds, Resources res, int backgroundID){
+    //For a common image button, i.e. close.
+    //public Button(Resources res, Rect img_rect, int buttonID, int overlayID){}
 
-        this.rect = new Rect(bounds);
-        this.background = BitmapFactory.decodeResource(res, backgroundID);
+    public Button(Resources res, Rect rect, int backgroundID, int foregroundID, int overlayID){
+        this.rect = rect;
 
-        hasText = false;
-        hasOverlay = false;
+        background = BitmapFactory.decodeResource(res, backgroundID);
+        foreground = BitmapFactory.decodeResource(res, foregroundID);
+        overlay = BitmapFactory.decodeResource(res, overlayID);
     }
 
-    /*public Button(Rect bounds, Resources res, int backgroundID, int overlayID){
+    public Button(Resources res, Point point, int backgroundID, int overlayID, Text text){
+        this.text = text;
+        rect = new Rect(createFromText(this.text, point));
 
-        this.rect = new Rect(bounds);
-        this.background = BitmapFactory.decodeResource(res, backgroundID);
-
-        hasText = false;
-        hasOverlay = true;
-        this.overlay = BitmapFactory.decodeResource(res, overlayID);
+        background = BitmapFactory.decodeResource(res, backgroundID);
+        overlay = BitmapFactory.decodeResource(res, overlayID);
     }
 
-    public Button(String text, int textColor, int textSize, Rect bounds, Resources res, int backgroundID){
-
-        hasText = true;
+    public Button(Resources res, Rect rect, int backgroundID, int overlayID, Text text){
         this.text = text;
+        this.rect = rect;
 
-        this.paint = new Paint();
-        this.paint.setColor(textColor);
-        this.paint.setTextSize(textSize);
-
-        this.rect = new Rect(bounds);
-        this.background = BitmapFactory.decodeResource(res, backgroundID);
-
-        hasOverlay = false;
-    }*/
-
-    public Button(String text, int textColor, int textSize, Rect bounds, Resources res, int backgroundID, int overlayID){
-
-        hasText = true;
-        this.text = text;
-
-        this.paint = new Paint();
-        this.paint.setColor(textColor);
-        this.paint.setTextSize(textSize);
-        this.paint.setTypeface(Typeface.DEFAULT_BOLD);
-        this.paint.setAntiAlias(true);
-
-        this.rect = new Rect(bounds);
-        this.background = BitmapFactory.decodeResource(res, backgroundID);
-
-        hasOverlay = true;
-        this.overlay = BitmapFactory.decodeResource(res, overlayID);
+        background = BitmapFactory.decodeResource(res, backgroundID);
+        overlay = BitmapFactory.decodeResource(res, overlayID);
     }
 
     public boolean contains(int x, int y){
         return rect.contains(x, y);
     }
 
+    //TODO: Implement a reaction for a button being pushed.
+    //public void push(){}
+
     public void draw(Canvas canvas){
 
         canvas.drawBitmap(background, null, rect, new Paint());
 
-        if(hasText) drawCentered(text, rect, canvas, paint);
+        if(text != null) drawCentered(text, rect, canvas);
+        if(foreground != null) canvas.drawBitmap(overlay, null, rect, new Paint());
 
-        if(hasOverlay) canvas.drawBitmap(overlay, null, rect, new Paint());
+        canvas.drawBitmap(overlay, null, rect, new Paint());
     }
 
-    private void drawCentered(String text, Rect bounds, Canvas canvas, Paint paint) {
+    private void drawCentered(Text text, Rect rect, Canvas canvas) {
         int mTextWidth, mTextHeight;
 
         //Calculate the size of the text
         Rect textBounds = new Rect();
-        paint.getTextBounds(text, 0, text.length(), textBounds);
-        mTextWidth = (int) paint.measureText(text);
+        text.getPaint().getTextBounds(text.getText(), 0, text.getText().length(), textBounds);
+        mTextWidth = (int) text.getPaint().measureText(text.getText());
         mTextHeight = textBounds.height();
 
-        canvas.drawText(text,
-                (bounds.centerX()) - (mTextWidth / 2f),
-                (float) (bounds.centerY()) + (mTextHeight / 2f),
-                paint
+        canvas.drawText(text.getText(),
+                (rect.centerX()) - (mTextWidth / 2f),
+                (float) (rect.centerY()) + (mTextHeight / 2f),
+                text.getPaint()
         );
+    }
+
+    private Rect createFromText(Text text, Point point){
+        final int width, height, buffer;
+
+        //Calculate the size of the text
+        Rect textBounds = new Rect();
+        text.getPaint().getTextBounds(text.getText(), 0, text.getText().length(), textBounds);
+        width = (int) text.getPaint().measureText(text.getText());
+        height = textBounds.height();
+        buffer = height;
+
+        return new Rect(
+                point.x - width/2 - buffer,
+                point.y - height/2 - buffer,
+                point.x + width/2 + buffer,
+                point.y + height/2 + buffer
+        );
+
+        /*return new Rect(
+                point.x - buffer,
+                point.y - buffer,
+                point.x + width + buffer,
+                point.y + height + buffer
+        );*/
     }
 }

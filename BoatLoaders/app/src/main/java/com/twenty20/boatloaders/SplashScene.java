@@ -17,15 +17,13 @@ import android.view.MotionEvent;
 public class SplashScene implements Scene{
 
     private SceneManager manager;
-
-    private final Bitmap splashScreen;
-    private final Rect splashScreenRect;
+    private final Image image;
+    private final Text text;
 
     SplashScene(SceneManager manager){
         this.manager = manager;
-
-        splashScreen = BitmapFactory.decodeResource(Constants.CURRENT_CONTEXT.getResources(), R.drawable.splashscreen);
-        splashScreenRect = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        image = new Image(Constants.CURRENT_CONTEXT.getResources(), R.drawable.splashscreen, Constants.SCREEN);
+        text = new Text.Builder("Tap to start").build();
     }
 
     @Override
@@ -35,17 +33,11 @@ public class SplashScene implements Scene{
 
     @Override
     public void draw(Canvas canvas) {
-        Paint paint = new Paint();
-
-        canvas.drawBitmap(splashScreen, null, splashScreenRect, new Paint());
-
-        paint.setColor(Color.BLACK);
-        paint.setTextSize(50);
-
-        drawCentered("Tap to Start", new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), canvas, paint);
+        image.draw(canvas);
+        drawText(text.getText(), Constants.SCREEN, canvas, text.getPaint());
     }
 
-    private void drawCentered(String text, Rect bounds, Canvas canvas, Paint paint) {
+    private void drawText(String text, Rect bounds, Canvas canvas, Paint paint) {
         int mTextWidth, mTextHeight;
 
         //Calculate the size of the text
@@ -68,8 +60,6 @@ public class SplashScene implements Scene{
 
     @Override
     public void receiveTouch(MotionEvent event) {
-        //On any event? tap screen...
-
         if(event.getAction() == MotionEvent.ACTION_UP) terminateTo(SceneEnum.MAINMENU);
     }
 

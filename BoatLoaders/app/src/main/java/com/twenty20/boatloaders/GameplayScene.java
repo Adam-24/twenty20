@@ -1,9 +1,9 @@
 package com.twenty20.boatloaders;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Paint;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 
@@ -16,50 +16,65 @@ public class GameplayScene implements Scene {
 
     private SceneManager manager;
 
-    private Bitmap background_image;
-    private Rect background;
+    //TODO: Create sprite class file.
+    private Image background;
+    private Image[] water;
 
-    //TODO: Create Sprite Class [Object]
-    private Bitmap water;
-    private Rect waterRect;
-    private Rect waterCrop;
+    private AnimationManager animationManager;
 
     private Column[] columns;
-    private Crate crate;
+    private Column columnReference;
+    private Crate crateReference;
 
-    private Popup endOfGame;
+    private GameOver endOfGame;
     private Popup pause;
 
-    private Button pauseButton;
+    private Image pauseButton;
 
-    private boolean hasWon;
-    private boolean isPaused;
+    private Text moveCount;
 
     public GameplayScene(SceneManager manager){
         this.manager = manager;
+        reset();
+    }
+
+    @Override
+    public void reset() {
+        endOfGame = new GameOver();
+        pause = new Pause();
+        moveCount = new Text.Builder("0")
+                .setSize(100)
+                .setColor(Color.WHITE)
+                .setIsBold()
+                .setPoint(new Point(10, 10))
+                .build();
+
+        initCrates();
+        initButtons();
+        initImgs();
+        initAnimations();
+    }
+
+    private void initAnimations() {
+        Animation waterAnim = new Animation(new Bitmap[]{water[0].getImage(), water[1].getImage(), water[2].getImage()}, 1f);
+        animationManager = new AnimationManager(new Animation[]{waterAnim});
     }
 
     private void initButtons() {
-        pauseButton = new Button( new Rect(
+        pauseButton = new Image(Constants.CURRENT_CONTEXT.getResources(), R.drawable.pause, new Rect(
                 Constants.SCREEN_WIDTH-125,
                 25,
                 Constants.SCREEN_WIDTH - 25,
-                125),
-                Constants.CURRENT_CONTEXT.getResources(), R.drawable.pause);
+                125)
+        );
     }
 
     private void initCrates() {
         columns = new Column[3];
 
-        //TEMP:
-        Rect[] temp = new Rect[3];
-        temp[0] = new Rect(0, 0, Constants.SCREEN_WIDTH/4, Constants.SCREEN_HEIGHT);
-        temp[1] = new Rect(temp[0].right, 0, temp[0].right + Constants.SCREEN_WIDTH/2, Constants.SCREEN_HEIGHT);
-        temp[2] = new Rect(temp[1].right, 0, temp[1].right + Constants.SCREEN_WIDTH/4, Constants.SCREEN_HEIGHT);
-
-        for (int i = 0; i < 3; i++) {
-            columns[i] = new Column(temp[i]);
-        }
+        columns[0] = new Column( new Rect(0, 0, (int)(Constants.SCREEN_WIDTH * .25), Constants.SCREEN_HEIGHT));
+        columns[1] = new Column( new Rect((int)(Constants.SCREEN_WIDTH * .25), 0, (int)(Constants.SCREEN_WIDTH * .75), Constants.SCREEN_HEIGHT));
+        columns[2] = new Column( new Rect((int)(Constants.SCREEN_WIDTH * .75), 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT));
 
         final int locationX = 0;
         final int locationY = 0;
@@ -68,34 +83,35 @@ public class GameplayScene implements Scene {
         final int growth = 40;
 
         for(int i = Constants.NUMBER_OF_CRATES; i > 0; i--){
-            columns[0].add(new Crate( new Rect(
+            columns[0].add(new Crate( new MovableImage(Constants.CURRENT_CONTEXT.getResources(), R.drawable.crate, new Rect(
                     locationX,
                     locationY,
                     locationX + initialSize + (i*growth),
                     locationY + initialSize
-            ), columns[0]));
+            ))));
         }
+
+        //TODO: SYS.
+        System.out.println(columns[0].numberOfCratesTEMP());
     }
 
     private void initImgs() {
-        background_image = BitmapFactory.decodeResource(Constants.CURRENT_CONTEXT.getResources(), R.drawable.gm_background);
-        background = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        background = new Image(Constants.CURRENT_CONTEXT.getResources(), R.drawable.gm_background, Constants.SCREEN);
 
-        water = BitmapFactory.decodeResource(Constants.CURRENT_CONTEXT.getResources(), R.drawable.wave_sprite);
-        waterRect = new Rect(Constants.SCREEN_WIDTH/4, (int) (Constants.SCREEN_HEIGHT * .75), Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
+        water = new Image[3];
 
-        waterCrop = new Rect(0, 0, 1920, 1000/3); // No idea, check how its supposed to work...
-    }
+        water[0] = new Image(Constants.CURRENT_CONTEXT.getResources(), R.drawable.wave_sprite_1,
+                new Rect(Constants.SCREEN_WIDTH/4, (int) (Constants.SCREEN_HEIGHT * .75), Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT)
+        );
 
-    @Override
-    public void reset() {
-        endOfGame = new GameOver();
-        pause = new Pause();
-        isPaused = false;
-        hasWon = false;
-        initCrates();
-        initButtons();
-        initImgs();
+        water[1] = new Image(Constants.CURRENT_CONTEXT.getResources(), R.drawable.wave_sprite_2,
+                new Rect(Constants.SCREEN_WIDTH/4, (int) (Constants.SCREEN_HEIGHT * .75), Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT)
+        );
+
+        water[2] = new Image(Constants.CURRENT_CONTEXT.getResources(), R.drawable.wave_sprite_3,
+                new Rect(Constants.SCREEN_WIDTH/4, (int) (Constants.SCREEN_HEIGHT * .75), Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT)
+        );
+
     }
 
     @Override
@@ -105,111 +121,91 @@ public class GameplayScene implements Scene {
 
     @Override
     public void receiveTouch(MotionEvent event) {
-        if(isPaused){
-
-            SceneEnum sceneEnum = pause.receiveTouch(event);
-
-            if (sceneEnum != null) {
-                //TODO: HACK, fix it.
-                if(sceneEnum == SceneEnum.SPLASHSCREEN) {
-                    isPaused = false;
-                    pause.close();
-                } else {
-                    terminateTo(sceneEnum);
-                    reset();
+        if(pause.isOpen()) {
+            if(pause.shouldClose(event)) {
+                SceneEnum terminateTo = pause.close();
+                if(terminateTo != null) terminateTo(terminateTo);
+            }
+        } else if(endOfGame.isOpen()){
+            if(endOfGame.shouldClose(event)) {
+                terminateTo(endOfGame.close());
+            }
+        } else {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                for (Column column : columns) {
+                    if (column.contains((int) event.getX(), (int) event.getY())) {
+                        crateReference = column.pickUp();
+                        column.removeTopCrate();
+                        columnReference = column;
+                    }
+                    //TODO: SYS
+                    System.out.println("Column holds: "+ column.numberOfCratesTEMP());
                 }
             }
 
-        } else {
-
-            if (!hasWon) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    for (Column column : columns) {
-                        if (column.contains((int) event.getX(), (int) event.getY())) {
-                            crate = column.pickUp();
-                            if (crate != null) crate.pickedUp(column);
-                        }
-                    }
-                }
-
-                if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if ((crate != null) && crate.isMoving()) {
-                        crate.reposition((int) event.getX(), (int) event.getY());
-                    }
+            if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                if (crateReference != null) {
+                    crateReference.updatePosition((int) event.getX(), (int) event.getY());
                 }
             }
 
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                if (!hasWon) {
+
+                if(crateReference != null) {
                     for (Column column : columns) {
-                        if ((crate != null) && column.contains((int) event.getX(), (int) event.getY())) {
-                            if (!column.placeCrate(crate)) {
-                                //put back.
-                                System.out.println("Did not work, putting back.");
-                                crate.pickedUpFrom().placeCrate(crate);
+                        if (column.contains((int) event.getX(), (int) event.getY())) {
+                            if (column.canPlaceCrate(crateReference)) {
+                                column.add(crateReference);
+                                crateReference = null;
+                                if(columnReference != column) moveCount.setText(String.valueOf((Integer.parseInt(moveCount.getText())+1)));
+                            } else {
+                                //System.out.println("Did not work, putting back.");
+                                columnReference.add(crateReference);
+                                crateReference = null;
                             }
-                            crate = null;
                         }
                     }
-
-
-                    if (pauseButton.contains((int) event.getX(), (int) event.getY())) {
-
-                        isPaused = true;
-                        pause.turnOn();
-                    }
                 }
 
-                if (hasWon = hasWon()) {
-                    //TODO: Win object == visible
-                    SceneEnum sceneEnum = endOfGame.receiveTouch(event);
-
-                    if (sceneEnum != null) {
-                        terminateTo(sceneEnum);
-                        reset();
-                    }
+                if (pauseButton.contains((int) event.getX(), (int) event.getY())) {
+                    pause.open();
                 }
 
-                outputInfo(event);
+                if (hasWon()) {
+                    endOfGame.open();
+                    endOfGame.setScore(Integer.parseInt(moveCount.getText()));
+                }
             }
         }
     }
 
     private boolean hasWon() {
-        return (columns[2].numberOfCratesHeld() == Constants.NUMBER_OF_CRATES);
-    }
-
-    private void outputInfo(MotionEvent event) {
-        for (int i = 0; i < 3; i++) {
-            if (columns[i].contains((int) event.getX(), (int) event.getY())){
-                System.out.println("Let go @: "+ (i+1));
-            }
-        }
-
-        System.out.println("Col 1: "+columns[0].numberOfCratesHeld());
-        System.out.println("Col 2: "+columns[1].numberOfCratesHeld());
-        System.out.println("Col 3: "+columns[2].numberOfCratesHeld());
+        return columns[2].isFull(); //Possibly pass in number, if not constant.
     }
 
     @Override
     public void draw(Canvas canvas) {
-
-        canvas.drawBitmap(background_image, null, background, new Paint());
-        canvas.drawBitmap(water, waterCrop, waterRect, new Paint());
+        background.draw(canvas);
+        //water.draw(canvas);
+        animationManager.draw(canvas, water[0].getRect()); //TODO: fix.
 
         pauseButton.draw(canvas);
+
+        moveCount.draw(canvas);
 
         for (Column column : columns) {
             column.draw(canvas);
         }
 
-        if (crate != null) crate.draw(canvas);
-        pause.draw(canvas);
-        if(hasWon) endOfGame.draw(canvas);
+        if (crateReference != null) crateReference.draw(canvas);
+
+        if(pause.isOpen())pause.draw(canvas);
+        if(endOfGame.isOpen()) endOfGame.draw(canvas);
     }
 
     @Override
     public void update() {
-
+        animationManager.playAnim(0);
+        animationManager.update();
     }
 }

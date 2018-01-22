@@ -1,7 +1,5 @@
 package com.twenty20.boatloaders;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -15,69 +13,105 @@ import android.view.MotionEvent;
 
 public class GameOver implements Popup {
 
-    private Bitmap background;
-    private Rect rect;
+    private Image image;
 
     private Button playAgain;
     private Button back;
 
+    private SceneEnum closeTo;
+    private boolean isOpen;
+
+    private Text score;
+
     public GameOver(){
-        rect = new Rect(
+        isOpen = false;
+
+        image = new Image(Constants.CURRENT_CONTEXT.getResources(), R.drawable.gm_win,
+                new Rect(
                 Constants.SCREEN_WIDTH/4,
                 Constants.SCREEN_HEIGHT/4,
                 Constants.SCREEN_WIDTH - Constants.SCREEN_WIDTH/4,
-                Constants.SCREEN_HEIGHT - Constants.SCREEN_HEIGHT/4);
+                Constants.SCREEN_HEIGHT - Constants.SCREEN_HEIGHT/4)
+        );
 
-        background = BitmapFactory.decodeResource(Constants.CURRENT_CONTEXT.getResources(), R.drawable.gm_win);
+        playAgain = new Button(Constants.CURRENT_CONTEXT.getResources(),
+                new Rect(image.getRect().left, image.getRect().bottom - 50, image.getRect().centerX() - 15, image.getRect().bottom + 50),
+                R.drawable.button_back, R.drawable.button_overlay,
+                new Text.Builder("Play Again").setColor(Color.BLACK).setSize(50).build());
 
-        playAgain = new Button("Play Again", Color.BLACK, 50,
-                new Rect(rect.left, rect.bottom - 50, rect.centerX() - 15, rect.bottom + 50),
-                Constants.CURRENT_CONTEXT.getResources(), R.drawable.button_back, R.drawable.button_overlay);
-
-        back = new Button("Back", Color.BLACK, 50,
-                new Rect(rect.centerX() + 15, rect.bottom - 50, rect.right, rect.bottom + 50),
-                Constants.CURRENT_CONTEXT.getResources(), R.drawable.button_back, R.drawable.button_overlay);
-    }
-
-    @Override
-    public void update() {
-
-    }
-
-    @Override
-    public SceneEnum receiveTouch(MotionEvent event) {
-        if(event.getAction() == MotionEvent.ACTION_UP){
-            if(playAgain.contains((int) event.getX(), (int) event.getY())){
-                return SceneEnum.GAME;
-            }
-
-            if(back.contains((int) event.getX(), (int) event.getY())) {
-                return SceneEnum.MAINMENU;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
-    public void turnOn(){
-        //TODO: NECESSARY?
+        back = new Button(Constants.CURRENT_CONTEXT.getResources(),
+                new Rect(image.getRect().centerX() + 15, image.getRect().bottom - 50, image.getRect().right, image.getRect().bottom + 50),
+                R.drawable.button_back, R.drawable.button_overlay,
+                new Text.Builder("Back").setColor(Color.BLACK).setSize(50).build());
     }
 
     @Override
     public void draw(Canvas canvas) {
         Paint paint = new Paint();
         paint.setColor(Color.argb(50, 0,0,0));
-
         canvas.drawRect(Constants.SCREEN, paint);
-        canvas.drawBitmap(background, null, rect, new Paint());
 
+        image.draw(canvas);
+        score.draw(canvas);
         playAgain.draw(canvas);
         back.draw(canvas);
     }
 
     @Override
-    public void close() {
+    public boolean shouldClose(MotionEvent event) {
+        if(event.getAction() == MotionEvent.ACTION_UP){
+            if(playAgain.contains((int) event.getX(), (int) event.getY())){
+                closeTo = SceneEnum.GAME;
+                return true;
+            }
+
+            if(back.contains((int) event.getX(), (int) event.getY())) {
+                closeTo = SceneEnum.MAINMENU;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void open() {
+        closeTo = null;
+        isOpen = true;
+    }
+
+    public void setScore(int score){
+
+        String compliments = "Very Good!";
+        int minimumMoves = (int) Math.pow(2, Constants.NUMBER_OF_CRATES) - 1;
+        if(score <= minimumMoves) compliments = "Perfect!";
+        else if(score <= minimumMoves + 10) compliments = "Awesome!";
+        else if(score <= minimumMoves + 20) compliments = "Great!";
+
+        this.score = new Text.Builder(String.valueOf(score) + " moves, " + compliments)
+            .setSize(100)
+            .setColor(Color.WHITE)
+            .setIsBold()
+            .setRect(new Rect(
+                    image.getRect().left,
+                    image.getRect().centerY(),
+                    image.getRect().right,
+                    image.getRect().bottom - image.getRect().height()/4))
+            .build();
+    }
+
+    @Override
+    public boolean isOpen() {
+        return isOpen;
+    }
+
+    @Override
+    public SceneEnum close() {
+        isOpen = false;
+        return closeTo;
+    }
+
+    @Override
+    public void update() {
 
     }
 }

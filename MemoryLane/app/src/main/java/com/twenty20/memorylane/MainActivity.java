@@ -1,4 +1,4 @@
-package com.twenty20.boatloaders;
+package com.twenty20.memorylane;
 
 import android.app.Activity;
 import android.graphics.PixelFormat;
@@ -31,17 +31,29 @@ public class MainActivity extends Activity {
         DisplayMetrics dm = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(dm);
 
-        MobileAds.initialize(this, "ca-app-pub-3562923192043286~2799661613");
+        //Set Ad
+        MobileAds.initialize(this, "ca-app-pub-3562923192043286~1944774745");
+
         adView = new AdView(this);
         adView.setAdSize(AdSize.BANNER);
-        adView.setAdUnitId("ca-app-pub-3562923192043286/9118314497");
+        adView.setAdUnitId("ca-app-pub-3562923192043286/7529764603");
 
         AdRequest adRequest = new AdRequest.Builder().build();
 
         adView.loadAd(adRequest);
 
+        setAdWindow();
+
+        Constants.SCREEN_WIDTH = dm.widthPixels; //TODO: Refactor & delete
+        Constants.SCREEN_HEIGHT = dm.heightPixels; //TODO: Refactor & delete
+        Constants.SCREEN = new Rect(0, 0, dm.widthPixels, dm.heightPixels);
+
+        setContentView(new GamePanel(this));
+    }
+
+    private void setAdWindow() {
         WindowManager.LayoutParams windowParams = new WindowManager.LayoutParams();
-        windowParams.gravity = Gravity.BOTTOM | Gravity.LEFT;
+        windowParams.gravity = Gravity.BOTTOM;
         windowParams.x = 0;
         windowParams.y = 0;
         windowParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -53,23 +65,11 @@ public class MainActivity extends Activity {
         windowParams.windowAnimations = 0;
 
         getWindowManager().addView(adView, windowParams);
-
-        Constants.SCREEN_WIDTH = dm.widthPixels;
-        Constants.SCREEN_HEIGHT = dm.heightPixels;
-        //Constants.NUMBER_OF_CRATES = 5; // Default, not really needed (or shouldn't be)
-        Constants.SCREEN = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
-        Constants.FIRST_POSITION = new Rect(0, 0, Constants.SCREEN_WIDTH/4, Constants.SCREEN_HEIGHT);
-        Constants.SECOND_POSITION = new Rect(Constants.FIRST_POSITION.right, 0, Constants.SCREEN_WIDTH/4, Constants.SCREEN_HEIGHT);
-        Constants.THIRD_POSITION = new Rect(Constants.SECOND_POSITION.right, 0, Constants.SCREEN_WIDTH/4, Constants.SCREEN_HEIGHT);
-
-        setContentView(new GamePanel(this));
     }
 
     @Override
     protected void onDestroy() {
-        if (adView != null) {
-            adView.destroy();
-        }
+        if (adView != null) {adView.destroy(); }
         super.onDestroy();
     }
 }

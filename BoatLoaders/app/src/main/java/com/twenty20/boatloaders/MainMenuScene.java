@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 
@@ -34,30 +35,20 @@ public class MainMenuScene implements Scene {
     }
 
     private void initRects() {
+        play_3 = new Button(Constants.CURRENT_CONTEXT.getResources(),
+                new Point(Constants.SCREEN.centerX(), Constants.SCREEN.centerY() - 75),
+                R.drawable.button_back, R.drawable.button_overlay,
+                new Text.Builder("3 Crates").setColor(Color.BLACK).setSize(50).setIsBold().build());
 
-        play_3 = new Button(
-                "3 Crates", Color.BLACK, 50, //350 x 150
-                new Rect(Constants.SCREEN.centerX() - 175, Constants.SCREEN.centerY() - 150, Constants.SCREEN.centerX() + 175, Constants.SCREEN.centerY()),
-                Constants.CURRENT_CONTEXT.getResources(),
-                R.drawable.button_back,
-                R.drawable.button_overlay
-        );
+        play_5 = new Button(Constants.CURRENT_CONTEXT.getResources(),
+                new Point(Constants.SCREEN.centerX(), Constants.SCREEN.centerY() + 100),
+                R.drawable.button_back, R.drawable.button_overlay,
+                new Text.Builder("5 Crates").setColor(Color.BLACK).setSize(50).setIsBold().build());
 
-        play_5 = new Button(
-                "5 Crates", Color.BLACK, 50,
-                new Rect(Constants.SCREEN.centerX() - 175, Constants.SCREEN.centerY() + 25, Constants.SCREEN.centerX() + 175, Constants.SCREEN.centerY() + 175),
-                Constants.CURRENT_CONTEXT.getResources(),
-                R.drawable.button_back,
-                R.drawable.button_overlay
-        );
-
-        play_8 = new Button(
-                "8 Crates", Color.BLACK, 50,
-                new Rect(Constants.SCREEN.centerX() - 175, Constants.SCREEN.centerY() + 200, Constants.SCREEN.centerX() + 175, Constants.SCREEN.centerY() + 350),
-                Constants.CURRENT_CONTEXT.getResources(),
-                R.drawable.button_back,
-                R.drawable.button_overlay
-        );
+        play_8 = new Button(Constants.CURRENT_CONTEXT.getResources(),
+                new Point(Constants.SCREEN.centerX(), Constants.SCREEN.centerY() + 275),
+                R.drawable.button_back, R.drawable.button_overlay,
+                new Text.Builder("8 Crates").setColor(Color.BLACK).setSize(50).setIsBold().build());
 
         background_image = BitmapFactory.decodeResource(Constants.CURRENT_CONTEXT.getResources(), R.drawable.mm_background);
         background = new Rect(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT);
